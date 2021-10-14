@@ -28,7 +28,7 @@ class Haj(Fisk):
         super().__init__(namn,maxdjup)
         self.antalTänder = antalTänder
     def ät(self,Djur):
-        print('hajen äter')
+        print(self.namn,'äter',Djur.namn)
 
 torsk = Torsk('firre',1500,29)
 haj = Haj('pen',1500, 6200)
