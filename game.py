@@ -14,7 +14,8 @@ OppScissor = False
 OppPaper = False
 OppWin = False
 OppLoss = False
-
+Opponent = ''
+YouMon = ''
 
 def RockF():
     global Rock
@@ -54,6 +55,39 @@ Påse = tk.Button(root,text = 'Paper',command = PaperF)
 Påse.place(x=800,y=700)
 Sax = tk.Button(root,text = 'Scissor',command = ScissorF)
 Sax.place(x=1100,y=700)
+OpponentName = tk.Entry(root)
+OpponentName.place(x=1920/2-200,y=500)
+Opponent = 'The Other ManGuyPersonSir'
+def box():
+    global Opponent
+    E = OpponentName.get()
+    if E == '':
+        OpponentName.place_forget()
+        SetOpponentName.place_forget()
+    else:
+        Opponent = E
+        OpponentName.place_forget()
+        SetOpponentName.place_forget()
+SetOpponentName = tk.Button(root,text='Set Name of Enemy',command = box)
+SetOpponentName.place(x=1920/2-320,y=500)
+
+YourName = tk.Entry(root)
+YourName.place(x=1920/2-200,y=600)
+
+You = 'You'
+def boxx():
+    global You
+    F = YourName.get()
+    if F == '':
+        YourName.place_forget()
+        SetYourName.place_forget()
+    else:
+        You = F
+        YourName.place_forget()
+        SetYourName.place_forget()
+SetYourName = tk.Button(root,text='Set Name of You',command = boxx)
+SetYourName.place(x=1920/2-305,y=600)
+
 def Swing():
     global lArm, rArm
     lArm.configure(image=Shake45L)
@@ -106,15 +140,19 @@ def PaperR():
     rArm.place(x=800,y=500)
 
 def Draw():
-    draw = tk.Label(root,text='DRAW').place(x=200,y=200)
+    draw = tk.Label(root,text='DRAW').place(x=1920/2-200,y=200)
 def loss():
-    lossn = tk.Label(root,text='YOU LOSE').place(x=200,y=200)
+    lossn = tk.Label(root,text='YOU LOSE').place(x=1920/2-200,y=200)
 def wins():
-    win = tk.Label(root,text='YOU WIN').place(x=200,y=200)
+    win = tk.Label(root,text='YOU WIN').place(x=1920/2-200,y=200)
    
 
 def Animation():
     global lArm, rArm
+    OpponentName.place_forget()
+    SetOpponentName.place_forget()
+    YourName.place_forget()
+    SetYourName.place_forget()
     Sten.place_forget()
     Påse.place_forget()
     Sax.place_forget()
@@ -164,7 +202,8 @@ def Game():
         OppScissor = True
     else:
         OppPaper = True
-    opponet = tk.Label(root,text='The Other ManGuy').place(x=1300,y=0)
+    opponet = tk.Label(root,text=Opponent).place(x=1300,y=0)
+    you = tk.Label(root,text=You).place(x=300,y=0)
   #  if OppRock == True and Scissor == True or OppPaper == True and Rock == True or OppScissor == True and Paper == True:
    #     loss()
     #elif OppRock == True and Rock == True or OppPaper == True and Paper == True or OppScissor == True and Scissor == True:
@@ -186,7 +225,6 @@ def Game():
     #Start.place(x=700,y=0)
     #b1 = tk.Button(root,text = 'bingbong',command = bingbong)
     #b1.place(x=700,y=300)
-
 
         
 
