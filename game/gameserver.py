@@ -1,5 +1,3 @@
-from concurrent.futures import thread
-from multiprocessing import connection
 import socket as so
 import _thread as th
 

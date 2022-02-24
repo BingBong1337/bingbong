@@ -9,22 +9,23 @@ def start_server():         # Samma som i förra exemplet
     return s
 
 def threaded_client(conn):
-    global runda
-
     a = conn.recv(1024)
     msg = a.decode("utf-16")
     print(msg)
-    for i in connections:
-        if i == conn:
-            pass
-        else:
-            i.send(msg.encode('utf-16'))
+    if msg == '':
+        pass
+    else:
+        for i in connections:
+            if i == conn:
+                pass
+            else:
+                i.send(msg.encode('utf-16'))
             
 
 
     threaded_client(conn)
 
-s = start_server()
+
 ThreadCount = 0
 connections = []
         
