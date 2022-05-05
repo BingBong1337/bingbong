@@ -1,11 +1,12 @@
-from sre_constants import SUCCESS
 import mysql.connector
 import tkinter as tk
-from tkinter import PhotoImage, ttk
+from tkinter import ttk
 root = tk.Tk()
 root.geometry('1920x1080')
 Canvas = tk.Canvas(root,bg = 'white', height = 2000, width = 3000,bd = 0)
 Canvas.pack()
+ProfilePic = tk.PhotoImage(file = 'SlutProjekt/proff.png')
+ProfilePic = ProfilePic.subsample(5,5)
 mydb = mysql.connector.connect(
     host = 'localhost',
     user = 'root',
@@ -94,8 +95,46 @@ def Deleter():
 
 def Profile():
     Canvas.delete('all')
-    ProfileFrame = tk.Frame(root, bg = 'white', bd = 0, width = 2000, height = 2000)
+    ProfileFrame = tk.Frame(root, bg = 'gray', bd = 0, width = 2000, height = 2000)
     ProfileFrame.place(x = 0, y = 0)
+    YourProfile = tk.Label(root, text = 'Your profile')
+    YourProfile.place(anchor = tk.CENTER, x = 775, y = 50)
+    GoBackBtn = tk.Button(root, text = 'Go back', command = MainCanvas)
+    GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 700)
+    query = ("SELECT id FROM signininfo WHERE Username = %s and Password = %s")
+    mycursor.execute(query,(SignInUserName, SignInPassWord,))
+    idresult = mycursor.fetchone()
+    idresult = idresult[0]
+    query1 = ("SELECT * FROM info WHERE id = %s")
+    #mycursor.execute(query,(idresult,))
+    #myresult = mycursor.fetchall()
+    query2 = ("SELECT * FROM signininfo WHERE id = %s")
+    mycursor.execute(query1,(idresult,))
+    myresult1 = mycursor.fetchall()
+    print(myresult1)
+    mycursor.execute(query2,(idresult,))
+    myresult2 = mycursor.fetchone()
+    print(myresult2)
+    for i in myresult2:
+        myresult1.append(myresult2)
+    print(myresult1)
+    tree = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings')
+    tree.column('#1',anchor = tk.CENTER)
+    tree.heading('#1',text = 'id')
+    tree.column('#2',anchor = tk.CENTER)
+    tree.heading('#2',text = 'FirstName')
+    tree.column('#3',anchor = tk.CENTER)
+    tree.heading('#3',text = 'SureName')
+    tree.column('#4',anchor = tk.CENTER)
+    tree.heading('#4',text = 'Age')
+    tree.column('#5',anchor = tk.CENTER)
+    tree.heading('#5',text = 'Username')
+    tree.column('#6',anchor = tk.CENTER)
+    tree.heading('#6',text = 'Password')
+    tree.place(anchor = tk.CENTER, x = 800 , y = 120)
+    for i in myresult1:
+        tree.insert('',tk.END,values = i)
+
 
 def LoginFrame():
     SuccessfulLoginFrame = tk.Frame(root, bg = 'blue', bd = 0, width = 2000, height = 2000)
@@ -124,7 +163,7 @@ def GetSignInInfo():
         root.after(1500,LoginScreen)
     
 def GetSignUpInfo():
-    global FirstNameSet, SureNameSet, AgeSet, UserNameSet, PassWordSet
+    global FirstNameSet, SureNameSet, AgeSet, UserNameSet, PassWordSet, id
     FirstNameSet = FirstNameRegister.get()
     SureNameSet = SureNameRegister.get()
     AgeSet = int(AgeRegister.get())
@@ -189,11 +228,11 @@ def LoginScreen():
     PassWordIn.place(anchor = tk.CENTER, x = 775, y = 300,)
     PassWordText = tk.Label(root, text = 'Input Your Password', bg = 'blue')
     PassWordText.place(anchor = tk.CENTER, x = 650, y = 300)
-    SignIn = tk.Button(root, text = 'Sign in', command = GetSignInInfo, bg = 'blue', bd = 0)
+    SignIn = tk.Button(root, text = 'Sign in', command = GetSignInInfo, bg = 'blue', activebackground = 'blue' ,bd = 0)
     SignIn.place(anchor = tk.CENTER, x = 775, y = 350)
-    SignUpBtn = tk.Button(root, text = 'Sign Up??',command = SignUp, bg = 'blue', activebackground = 'green', bd = 0, fg = 'yellow')
+    SignUpBtn = tk.Button(root, text = 'Sign Up??',command = SignUp, bg = 'blue', activebackground = 'blue', bd = 0, )
     SignUpBtn.place(anchor = tk.CENTER, x = 775, y = 500)
-    Killer = tk.Button(root, text = 'Quit?', command = root.destroy, bg = 'blue', bd = 0)
+    Killer = tk.Button(root, text = 'Quit?', command = root.destroy, bg = 'blue', bd = 0, fg = 'red', activebackground = 'red')
     Killer.place(anchor = tk.CENTER, x = 775, y = 700)
 
 def logout():
@@ -223,10 +262,8 @@ def MainCanvas():
     Killer.place(anchor = tk.CENTER,x=775,y=750)
     LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
     LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
-    ProfilePic = tk.PhotoImage(file = 'SlutProject/proff.png')
-    ProfilePic = ProfilePic.subsample(5,5)
-    ProfileBtn = tk.Button(root, command = Profile, image = ProfilePic)
-    ProfileBtn.place(anchor = tk.CENTER, x = 700, y = 400)
+    ProfileBtn = tk.Button(root, image = ProfilePic, command = Profile)
+    ProfileBtn.place(anchor = tk.CENTER, x = 1500, y = 33)
 
 
 LoginScreen()
