@@ -1,6 +1,6 @@
 import mysql.connector
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ANCHOR, ttk
 root = tk.Tk()
 root.geometry('1920x1080')
 Canvas = tk.Canvas(root,bg = 'white', height = 2000, width = 3000,bd = 0)
@@ -106,35 +106,78 @@ def Profile():
     idresult = mycursor.fetchone()
     idresult = idresult[0]
     query1 = ("SELECT * FROM info WHERE id = %s")
-    #mycursor.execute(query,(idresult,))
-    #myresult = mycursor.fetchall()
     query2 = ("SELECT * FROM signininfo WHERE id = %s")
     mycursor.execute(query1,(idresult,))
-    myresult1 = mycursor.fetchall()
-    print(myresult1)
+    myresult1 = mycursor.fetchone()
     mycursor.execute(query2,(idresult,))
     myresult2 = mycursor.fetchone()
-    print(myresult2)
-    for i in myresult2:
-        myresult1.append(myresult2)
     print(myresult1)
-    tree = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings')
-    tree.column('#1',anchor = tk.CENTER)
-    tree.heading('#1',text = 'id')
-    tree.column('#2',anchor = tk.CENTER)
-    tree.heading('#2',text = 'FirstName')
-    tree.column('#3',anchor = tk.CENTER)
-    tree.heading('#3',text = 'SureName')
-    tree.column('#4',anchor = tk.CENTER)
-    tree.heading('#4',text = 'Age')
-    tree.column('#5',anchor = tk.CENTER)
-    tree.heading('#5',text = 'Username')
-    tree.column('#6',anchor = tk.CENTER)
-    tree.heading('#6',text = 'Password')
-    tree.place(anchor = tk.CENTER, x = 800 , y = 120)
-    for i in myresult1:
-        tree.insert('',tk.END,values = i)
+    print(myresult2)
 
+    idbox = tk.Entry(root)
+    idbox.insert(0,myresult1[0])
+    idbox.place(anchor = tk.CENTER, x = 775, y = 100)
+    idboxtext = tk.Label(root, text = 'Your Id')
+    idboxtext.place(anchor = tk.CENTER, x = 650, y = 100)
+    namebox = tk.Entry(root)
+    namebox.insert(0,myresult1[1])
+    namebox.place(anchor = tk.CENTER, x = 775, y = 150)
+    nameboxtext = tk.Label(root, text = 'Your Name')
+    nameboxtext.place(anchor = tk.CENTER, x = 650, y = 150)
+    othernamebox = tk.Entry(root)
+    othernamebox.insert(0,myresult1[2])
+    othernamebox.place(anchor = tk.CENTER, x = 775, y = 200)
+    othernameboxtext = tk.Label(root, text = 'Your Surename')
+    othernameboxtext.place(anchor = tk.CENTER, x = 650, y = 200)
+    agebox = tk.Entry(root)
+    agebox.insert(0,myresult1[3])
+    agebox.place(anchor = tk.CENTER, x = 775, y = 250)
+    ageboxtext = tk.Label(root, text = 'Your Age')
+    ageboxtext.place(anchor = tk.CENTER, x = 650, y = 250)
+    usernamebox = tk.Entry(root)
+    usernamebox.insert(0,myresult2[1])
+    usernamebox.place(anchor = tk.CENTER, x = 775, y = 300)
+    usernameboxtext = tk.Label(root, text = 'Your username')
+    usernameboxtext.place(anchor = tk.CENTER, x = 650, y = 300)
+    passwordbox = tk.Entry(root)
+    passwordbox.insert(0,myresult2[2])
+    passwordbox.place(anchor = tk.CENTER, x = 775, y = 350)
+    passwordboxtext = tk.Label(root, text = 'Your Password')
+    passwordboxtext.place(anchor = tk.CENTER, x = 650, y = 350)
+    def GetNewChanges():
+            name = namebox.get()
+            othername = othernamebox.get()
+            age = agebox.get()
+            username = usernamebox.get()
+            password = passwordbox.get()
+            query = ("UPDATE info SET FirstName = %s, SureName = %s, Age = %s WHERE id = %s")
+            mycursor.execute(query,(name,othername,age,idresult,))
+            query = ("UPDATE signininfo SET Username = %s, Password = %s WHERE id = %s")
+            mycursor.execute(query,(username,password,idresult,))
+            mydb.commit()
+            '''
+            if name != myresult1[1]:
+                query = ("UPDATE info SET FirstName = %s WHERE id = %s")
+                mycursor.execute(query,(name,idresult,))
+            if othername != myresult1[2]:
+                query = ("UPDATE info SET SureName = %s WHERE id = %s")
+                mycursor.execute(query,(othername,idresult,))
+            if age != myresult1[3]:
+                query = ("UPDATE info SET Age = %s WHERE id = %s")
+                mycursor.execute(query,(age,idresult,))
+            if username != myresult2[1]:
+                query = ("UPDATE signininfo SET Username = %s WHERE id = %s")
+                mycursor.execute(query,(username,idresult,))
+            if password != myresult2[2]:
+                query = ("UPDATE sigininfo SET Password = %s WHERE id = %s")
+                mycursor.execute(query,(password,idresult,))
+                '''
+
+
+    ChangePersonalInfoBtn = tk.Button(root, text = 'Save new changes',command = GetNewChanges )
+    ChangePersonalInfoBtn.place(anchor = tk.CENTER, x = 775, y = 600)
+    
+    
 
 def LoginFrame():
     SuccessfulLoginFrame = tk.Frame(root, bg = 'blue', bd = 0, width = 2000, height = 2000)
@@ -205,7 +248,7 @@ def SignUp():
     SetUserName.place(anchor = tk.CENTER, x = 775, y = 300)
     UserNameText = tk.Label(root, text = 'Input Your Desired Username')
     UserNameText.place(anchor = tk.CENTER, x = 630, y = 300)
-    SetPassWord = tk.Entry(root)
+    SetPassWord = tk.Entry(root,show = '*')
     SetPassWord.place(anchor = tk.CENTER, x = 775, y = 350)
     PassWordText = tk.Label(root, text = 'Input Your Desired Password')
     PassWordText.place(anchor = tk.CENTER, x = 630, y = 350)
@@ -224,7 +267,7 @@ def LoginScreen():
     UserNameIn.place(anchor = tk.CENTER, x = 775, y = 250)
     UserNameText = tk.Label(root, text = 'Input Your Username', bg = 'blue')
     UserNameText.place(anchor = tk.CENTER, x = 650, y= 250)
-    PassWordIn = tk.Entry(root, bg = 'blue')
+    PassWordIn = tk.Entry(root, bg = 'blue',show = '*')
     PassWordIn.place(anchor = tk.CENTER, x = 775, y = 300,)
     PassWordText = tk.Label(root, text = 'Input Your Password', bg = 'blue')
     PassWordText.place(anchor = tk.CENTER, x = 650, y = 300)
