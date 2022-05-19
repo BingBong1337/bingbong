@@ -1,6 +1,7 @@
 import mysql.connector
 import tkinter as tk
-from tkinter import ANCHOR, ttk
+from tkinter import ttk
+import random as r
 root = tk.Tk()
 root.geometry('1920x1080')
 Canvas = tk.Canvas(root,bg = 'white', height = 2000, width = 3000,bd = 0)
@@ -16,6 +17,36 @@ mydb = mysql.connector.connect(
 mycursor = mydb.cursor()
 print('Uppkopplad till databasen')
 
+
+class Booking:
+    def __init__(self, time , date, fromcity, tocity, klass, price):
+        self.time = time
+        self.date = date
+        self.fromcity = fromcity
+        self.tocity = tocity
+        self.klass = klass
+        self.price = price
+        
+
+HourTime = r.randint(0,23)
+MinuteTime = r.randint(0,59)
+Month = r.randint(1,12)
+Day = r.randint(0,28)
+Year = r.randint(2022,2030)
+if HourTime < 10:
+    HourTime = '0' + str(HourTime)
+if MinuteTime < 10:
+    MinuteTime = '0' + str(MinuteTime)
+if Month < 10:
+    Month = '0' + str(Month)
+if Day < 10:
+    Day = '0' + str(Day)
+Time = str(HourTime) + ':'+ str(MinuteTime)
+print(Time)
+Date = str(Year) + ':' + str(Month) + ':' + str(Day)
+print(Date)
+
+'''
 def Inserter():
     global NameInput,AgeInput,sql,NameGet, SureNameInput
     sql = 'INSERT INTO Info (FirstName,SureName, Age) VALUES (%s,%s,%s)'
@@ -36,6 +67,8 @@ def Inserter():
     Adder.place_forget()
     Remover.place_forget()
     Read.place_forget()
+    finished = tk.Button(root,text = 'Go Back',command = AdminPage)
+    finished.place(anchor = tk.CENTER, x = 775, y = 700)
     return
 
 def GetI():
@@ -48,7 +81,7 @@ def GetI():
     mydb.commit()
     print(val, 'Entered')
     MainCanvas()
-    
+'''
 
 def Reader():
     mycursor.execute('SELECT * FROM Info') #Ändra '*' till namnet på kollumn som vill readas
@@ -67,31 +100,35 @@ def Reader():
     tree.place(anchor = tk.CENTER, x = 800 , y = 120)
     for i in myresult:
         tree.insert('',tk.END,values = i)
-    finished = tk.Button(root,text = 'Go Back',command = MainCanvas)
+    finished = tk.Button(root,text = 'Go Back',command = AdminPage)
     finished.place(anchor = tk.CENTER, x = 775, y = 700)
     return
 
 def GetRev():
     global RemoveGet
-    RemoveGet = RemoveInput.get()
+    RemoveGet = int(RemoveInput.get())
     RemoveInput.place_forget()
     RemoveInputGet.place_forget()
-    sql = "DELETE FROM Info WHERE FirstName = %s"
+    sql = "DELETE FROM Info WHERE id = %s"
+    mycursor.execute(sql,(RemoveGet,))
+    sql = "DELETE FROM signininfo WHERE id = %s"
     mycursor.execute(sql,(RemoveGet,))
     mydb.commit()
-    MainCanvas()
+    AdminPage()
 
 def Deleter():
     global RemoveInput,RemoveInputGet
     RemoveInput = tk.Entry(root)
     RemoveInput.place(anchor = tk.CENTER,x=775,y=100)
-    RemoveText = tk.Label(root, text = 'Enter Name To Be Removed')
+    RemoveText = tk.Label(root, text = 'Enter Id of Person To Be Removed')
     RemoveText.place(anchor = tk.CENTER, x = 600, y = 100)
     RemoveInputGet = tk.Button(root,text='Delete Person?',command = GetRev)
     RemoveInputGet.place(anchor = tk.CENTER,x=900,y=100)
     Adder.place_forget()
     Read.place_forget()
     Remover.place_forget()
+    finished = tk.Button(root,text = 'Go Back',command = AdminPage)
+    finished.place(anchor = tk.CENTER, x = 775, y = 700)
 
 def Profile():
     Canvas.delete('all')
@@ -111,14 +148,7 @@ def Profile():
     myresult1 = mycursor.fetchone()
     mycursor.execute(query2,(idresult,))
     myresult2 = mycursor.fetchone()
-    print(myresult1)
-    print(myresult2)
 
-    idbox = tk.Entry(root)
-    idbox.insert(0,myresult1[0])
-    idbox.place(anchor = tk.CENTER, x = 775, y = 100)
-    idboxtext = tk.Label(root, text = 'Your Id')
-    idboxtext.place(anchor = tk.CENTER, x = 650, y = 100)
     namebox = tk.Entry(root)
     namebox.insert(0,myresult1[1])
     namebox.place(anchor = tk.CENTER, x = 775, y = 150)
@@ -144,6 +174,7 @@ def Profile():
     passwordbox.place(anchor = tk.CENTER, x = 775, y = 350)
     passwordboxtext = tk.Label(root, text = 'Your Password')
     passwordboxtext.place(anchor = tk.CENTER, x = 650, y = 350)
+
     def GetNewChanges():
             name = namebox.get()
             othername = othernamebox.get()
@@ -155,23 +186,6 @@ def Profile():
             query = ("UPDATE signininfo SET Username = %s, Password = %s WHERE id = %s")
             mycursor.execute(query,(username,password,idresult,))
             mydb.commit()
-            '''
-            if name != myresult1[1]:
-                query = ("UPDATE info SET FirstName = %s WHERE id = %s")
-                mycursor.execute(query,(name,idresult,))
-            if othername != myresult1[2]:
-                query = ("UPDATE info SET SureName = %s WHERE id = %s")
-                mycursor.execute(query,(othername,idresult,))
-            if age != myresult1[3]:
-                query = ("UPDATE info SET Age = %s WHERE id = %s")
-                mycursor.execute(query,(age,idresult,))
-            if username != myresult2[1]:
-                query = ("UPDATE signininfo SET Username = %s WHERE id = %s")
-                mycursor.execute(query,(username,idresult,))
-            if password != myresult2[2]:
-                query = ("UPDATE sigininfo SET Password = %s WHERE id = %s")
-                mycursor.execute(query,(password,idresult,))
-                '''
 
 
     ChangePersonalInfoBtn = tk.Button(root, text = 'Save new changes',command = GetNewChanges )
@@ -183,8 +197,16 @@ def LoginFrame():
     SuccessfulLoginFrame = tk.Frame(root, bg = 'blue', bd = 0, width = 2000, height = 2000)
     SuccessfulLoginFrame.place(x = 0, y = 0)
 
+def logout():
+    logoutFrame = tk.Frame(root,bg = 'green', bd = 0, width = 2000, height = 2000)
+    logoutFrame.place(x = 0, y = 0)
+    LogoutText = tk.Label(root, text = 'Logout successful!')
+    LogoutText.place(anchor = tk.CENTER, x = 775, y = 100)
+    root.after(2000, LoginScreen)
+
 def GetSignInInfo():
-    global SignInUserName, SignInPassWord
+    global SignInUserName, SignInPassWord, AdminPrivledges
+    AdminPrivledges = 0
     SignInUserName = UserNameIn.get()
     SignInPassWord = PassWordIn.get()
     UserNameIn.delete(0,'end')
@@ -193,11 +215,15 @@ def GetSignInInfo():
     mycursor.execute(query,(SignInUserName,SignInPassWord))
     rows = mycursor.fetchone()
     try:
-        if rows[1] == SignInUserName and rows[2] == SignInPassWord:
+        if SignInUserName == 'Admin' and SignInPassWord == 'Admin':
+            AdminPage()
+            AdminPrivledges += 1
+        elif rows[1] == SignInUserName and rows[2] == SignInPassWord:
             Canvas.delete('all')
             LoginFrame()
             success = tk.Label(root,text='Sign in successful!', bg = 'green')
             success.place(anchor = tk.CENTER, x = 775, y = 50)
+        
             
             root.after(2000, MainCanvas)
     except:
@@ -223,7 +249,10 @@ def GetSignUpInfo():
     SignInInfo = (id,UserNameSet,PassWordSet)
     mycursor.execute(sql,SignInInfo)
     mydb.commit()
-    LoginScreen()
+    if AdminPrivledges >= 1:
+        AdminPage()
+    else:
+        LoginScreen()
 
 def SignUp():
     global FirstNameRegister, SureNameRegister, AgeRegister, SetUserName, SetPassWord
@@ -254,8 +283,13 @@ def SignUp():
     PassWordText.place(anchor = tk.CENTER, x = 630, y = 350)
     SetSignInInfo = tk.Button(root,text = 'Create User',command = GetSignUpInfo)
     SetSignInInfo.place(anchor = tk.CENTER, x = 775, y = 400)
-    GoBackBtn = tk.Button(root, text = 'Go back to sign in screen', command = LoginScreen)
-    GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 500)
+
+    if AdminPrivledges >= 1:
+        GoBackBtn = tk.Button(root, text = 'Go back to sign in screen', command = AdminPage)
+        GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 500)
+    else:
+        GoBackBtn = tk.Button(root, text = 'Go back to sign in screen', command = LoginScreen)
+        GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 500)
 
 def LoginScreen():
     global UserNameIn, PassWordIn
@@ -278,13 +312,37 @@ def LoginScreen():
     Killer = tk.Button(root, text = 'Quit?', command = root.destroy, bg = 'blue', bd = 0, fg = 'red', activebackground = 'red')
     Killer.place(anchor = tk.CENTER, x = 775, y = 700)
 
-def logout():
-    LogoutText = tk.Label(root, text = 'Logout successful!')
-    LogoutText.place(anchor = tk.CENTER, x = 775, y = 100)
-    root.after(2000, LoginScreen)
+def AdminPage():
+    global Adder, Read, Remover
+    AdminFrame = tk.Frame(root,bg = 'purple', bd = 0,width = 2000, height = 2000)
+    AdminFrame.place(x = 0, y = 0)
+    Adder = tk.Button(root,text = 'Add Person?',command = SignUp)
+    Adder.place(anchor = tk.CENTER, x= 775,y=50)
+    Remover = tk.Button(root,text = 'Remove Person?',command = Deleter)
+    Remover.place(anchor = tk.CENTER, x= 775,y=100)
+    Read = tk.Button(root,text = 'Print all in database?',command = Reader)
+    Read.place(anchor = tk.CENTER, x= 775,y=150)
+    LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
+    LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
+
+def RandomizeTrainSchedule():
+    HourTime = r.randint(0,23)
+    MinuteTime = r.randint(0,59)
+    Month = r.randint(1,12)
+    Day = r.randint(0,28)
+    Year = r.randint(2022,2030)
+    if HourTime < 10:
+        HourTime = '0' + str(HourTime)
+    if MinuteTime < 10:
+        MinuteTime = '0' + str(MinuteTime)
+    Time = str(HourTime) + ':'+ str(MinuteTime)
+    print(Time)
+    Date = str(Year) + ':' + str(Month) + ':' + str(Day)
+    print(Date)
+
+
 
 def MainCanvas():
-    global Adder, Read, Remover
     Canvas.delete('all')
     AdFrame = tk.Frame(root, bg = 'blue', bd = 0, width = 2000, height = 70)
     AdFrame.place(x = 0, y = 0)
@@ -295,18 +353,13 @@ def MainCanvas():
     DateFrame = tk.Frame(root, bg = 'purple', bd = 0, width = 1000, height = 2000)
     DateFrame.place(x = 1100 , y = 70)
 
-    Adder = tk.Button(root,text = 'Add Person?',command = Inserter)
-    Adder.place(anchor = tk.CENTER, x= 775,y=50)
-    Remover = tk.Button(root,text = 'Remove Person?',command = Deleter)
-    Remover.place(anchor = tk.CENTER, x= 775,y=100)
-    Read = tk.Button(root,text = 'Print all in database?',command = Reader)
-    Read.place(anchor = tk.CENTER, x= 775,y=150)
     Killer = tk.Button(root,text = 'Quit?', command = root.destroy)
     Killer.place(anchor = tk.CENTER,x=775,y=750)
     LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
     LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
     ProfileBtn = tk.Button(root, image = ProfilePic, command = Profile)
     ProfileBtn.place(anchor = tk.CENTER, x = 1500, y = 33)
+
 
 
 LoginScreen()
