@@ -2,11 +2,14 @@ import mysql.connector
 import tkinter as tk
 from tkinter import ttk
 import random as r
+import socket as so
+import _thread as th
+
 root = tk.Tk()
 root.geometry('1920x1080')
 Canvas = tk.Canvas(root,bg = 'white', height = 2000, width = 3000,bd = 0)
 Canvas.pack()
-ProfilePic = tk.PhotoImage(file = 'SlutProjekt/proff.png')
+ProfilePic = tk.PhotoImage(file = 'proff.png')
 ProfilePic = ProfilePic.subsample(5,5)
 mydb = mysql.connector.connect(
     host = 'localhost',
@@ -16,7 +19,6 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 print('Uppkopplad till databasen')
-
 
 class Booking:
     def __init__(self, time , date, fromcity, tocity, klass, price):
@@ -46,42 +48,6 @@ print(Time)
 Date = str(Year) + ':' + str(Month) + ':' + str(Day)
 print(Date)
 
-'''
-def Inserter():
-    global NameInput,AgeInput,sql,NameGet, SureNameInput
-    sql = 'INSERT INTO Info (FirstName,SureName, Age) VALUES (%s,%s,%s)'
-    NameInput = tk.Entry(root)
-    NameInput.place(anchor = tk.CENTER, x = 775, y = 100)
-    NameText = tk.Label(root,text = 'First Name')
-    NameText.place(anchor = tk.CENTER, x=650, y = 100)
-    SureNameInput = tk.Entry(root)
-    SureNameInput.place(anchor = tk.CENTER , x = 775 , y = 150)
-    SureNameText = tk.Label(root,text = 'Sure Name')
-    SureNameText.place(anchor = tk.CENTER, x = 650, y = 150)
-    AgeInput = tk.Spinbox(root,from_=0, to = 99,wrap =True)
-    AgeInput.place(anchor = tk.CENTER, x = 775, y = 200)
-    AgeText = tk.Label(root,text = 'Age')
-    AgeText.place(anchor = tk.CENTER, x = 650, y = 200)
-    NameGet = tk.Button(root,text = 'Add Person?',command = GetI)
-    NameGet.place(anchor = tk.CENTER,x=900,y=100)
-    Adder.place_forget()
-    Remover.place_forget()
-    Read.place_forget()
-    finished = tk.Button(root,text = 'Go Back',command = AdminPage)
-    finished.place(anchor = tk.CENTER, x = 775, y = 700)
-    return
-
-def GetI():
-    global Name,Age
-    Name = NameInput.get()
-    SureName = SureNameInput.get()
-    Age = int(AgeInput.get())
-    val = (Name,SureName,Age)
-    mycursor.execute(sql,val)
-    mydb.commit()
-    print(val, 'Entered')
-    MainCanvas()
-'''
 
 def Reader():
     mycursor.execute('SELECT * FROM Info') #Ändra '*' till namnet på kollumn som vill readas
@@ -325,6 +291,52 @@ def AdminPage():
     LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
     LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
 
+def connect_to_server():
+    s = so.socket()
+    host = 'localhost'
+    port = 12345
+    s.connect((host, port))
+    return s
+    
+def click_handler():
+    msg = MessageEntry.get()
+    b = msg
+    c = (f'{SignInUserName}: {b}')
+    d = c.encode("utf-16") 
+    s.send(d)
+    MessageEntry.delete(0,1000)
+
+def ChattingFrame():
+    global MessageEntry, MessageRecived, s
+    Canvas.delete('all')
+    s = connect_to_server()
+    ChatFrame = tk.Frame(root, bg = 'gray', bd = 0, width = 2000, height = 2000)
+    ChatFrame.place(x = 0, y = 0)
+    MessageEntry = tk.Entry(root)
+    MessageEntry.place(anchor = tk.CENTER, x = 775, y = 100)
+    MessageRecived = tk.Label(root)
+    MessageRecived.place(anchor = tk.CENTER, x = 775, y = 150)
+    MessageSender = tk.Button(root, text ="Skicka", command = click_handler)
+    MessageSender.place(anchor = tk.CENTER, x = 775, y = 300)
+    th.start_new_thread(receiver_thread, ())
+
+def chatting():
+    pass
+  
+
+
+def receiver_thread():
+    while True:
+        b = s.recv(1024)
+        msg = b.decode("utf-16")
+        MessageRecived["text"] = msg
+
+def chat():
+    global s
+    s = connect_to_server()
+    th.start_new_thread(receiver_thread, ())
+    #root.mainloop()
+
 def RandomizeTrainSchedule():
     HourTime = r.randint(0,23)
     MinuteTime = r.randint(0,59)
@@ -359,7 +371,8 @@ def MainCanvas():
     LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
     ProfileBtn = tk.Button(root, image = ProfilePic, command = Profile)
     ProfileBtn.place(anchor = tk.CENTER, x = 1500, y = 33)
-
+    ChatBtn = tk.Button(root, text = 'Open Chat', command = ChattingFrame)
+    ChatBtn.place(anchor = tk.CENTER, x = 770, y = 300)
 
 
 LoginScreen()
