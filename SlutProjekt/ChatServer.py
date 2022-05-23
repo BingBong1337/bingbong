@@ -8,26 +8,32 @@ def start_server():         # Samma som i förra exemplet
     s.listen()
     return s
 
+
+
 def threaded_client(conn):
+    k = True
     try:
         a = conn.recv(1024)
         msg = a.decode("utf-16")
         print(msg)
-        for i in connections:
-            #if i == conn:
-             #   pass
-           # else:
-            i.send(msg.encode('utf-16'))
+        if msg == 'xqzwy':
+            connections.remove(conn)
+            ThreadCount = ThreadCount-1
+            conn.close()
+            k = False
+            
+        else:
+            for i in connections:
+                i.send(msg.encode('utf-16'))
     except:
         pass
+    if k == True:
+        threaded_client(conn)
 
 
-    threaded_client(conn)
 
-
-ThreadCount = 0
 connections = []
-        
+ThreadCount = 0
 
 s = start_server()
 
@@ -38,6 +44,6 @@ while True: # Skapar en ny tråd för varje klient som ansluter
     print("En ny klient anslöt: " + address[0] + ':'
           + str(address[1]))
     connections.append(conn)
+    ThreadCount = len(connections)
     start_new_thread(threaded_client, (conn, ))
-    ThreadCount += 1
     print("Tråd nummer: " + str(ThreadCount))

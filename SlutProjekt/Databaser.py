@@ -164,10 +164,12 @@ def LoginFrame():
     SuccessfulLoginFrame.place(x = 0, y = 0)
 
 def logout():
+    global AdminPrivledges
     logoutFrame = tk.Frame(root,bg = 'green', bd = 0, width = 2000, height = 2000)
     logoutFrame.place(x = 0, y = 0)
     LogoutText = tk.Label(root, text = 'Logout successful!')
     LogoutText.place(anchor = tk.CENTER, x = 775, y = 100)
+    AdminPrivledges = 0
     root.after(2000, LoginScreen)
 
 def GetSignInInfo():
@@ -301,35 +303,51 @@ def connect_to_server():
 def click_handler():
     msg = MessageEntry.get()
     b = msg
-    c = (f'{SignInUserName}: {b}')
+    c = SignInUserName + '->' + b
     d = c.encode("utf-16") 
     s.send(d)
     MessageEntry.delete(0,1000)
 
 def ChattingFrame():
-    global MessageEntry, MessageRecived, s
+    global MessageEntry, s, tree
     Canvas.delete('all')
     s = connect_to_server()
     ChatFrame = tk.Frame(root, bg = 'gray', bd = 0, width = 2000, height = 2000)
     ChatFrame.place(x = 0, y = 0)
     MessageEntry = tk.Entry(root)
     MessageEntry.place(anchor = tk.CENTER, x = 775, y = 100)
-    MessageRecived = tk.Label(root)
-    MessageRecived.place(anchor = tk.CENTER, x = 775, y = 150)
     MessageSender = tk.Button(root, text ="Skicka", command = click_handler)
-    MessageSender.place(anchor = tk.CENTER, x = 775, y = 300)
+    MessageSender.place(anchor = tk.CENTER, x = 775, y = 150)
+    finished = tk.Button(root,text = 'Go Back',command = quitchat)
+    finished.place(anchor = tk.CENTER, x = 775, y = 700)
+    tree = ttk.Treeview(root, column = ('c1'), show = 'headings', height = 20)
+    tree.column('#1',anchor = tk.CENTER, width = 800)
+    tree.heading('#1',text = 'message')
+    vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = tree.yview)
+    tree.config(xscrollcommand=vrtcscrll.set)
+    tree.place(anchor = tk.CENTER, x = 775 , y = 400)
     th.start_new_thread(receiver_thread, ())
+    
+    
 
-def chatting():
-    pass
-  
+def quitchat():
+    c = 'xqzwy'
+    d = c.encode("utf-16") 
+    s.send(d)
+    MainCanvas()
 
 
 def receiver_thread():
     while True:
         b = s.recv(1024)
         msg = b.decode("utf-16")
-        MessageRecived["text"] = msg
+        if msg == '':
+            pass
+        else:
+            msglist = []
+            msglist.append(msg)
+            for i in msglist:
+                tree.insert('',tk.END, values = msglist,)
 
 def chat():
     global s
