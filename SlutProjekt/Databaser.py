@@ -4,6 +4,7 @@ from tkinter import ttk
 import random as r
 import socket as so
 import _thread as th
+from tkcalendar import Calendar
 
 root = tk.Tk()
 root.geometry('1920x1080')
@@ -33,14 +34,15 @@ class Booking():
         return '({} {} {} {} {} {})'. format(self.time, self.date, self.fromcity,  self.tocity, self.klass, self.price)
 
 def RandomizeTrainScheduleTime():
-    global HourTime
+    global HourTime, intHourTime
     HourTime = r.randint(0,23)
+    intHourTime = HourTime
     MinuteTime = r.randint(0,59)
     if HourTime < 10:
         HourTime = '0' + str(HourTime)
     if MinuteTime < 10:
         MinuteTime = '0' + str(MinuteTime)
-    Time = str(HourTime) + ':'+ str(MinuteTime)
+    Time = str(HourTime) + '-'+ str(MinuteTime)
     
     return Time
 
@@ -52,7 +54,7 @@ def RandomizeTrainScheduleDate():
         Month = '0' + str(Month)
     if Day < 10:
         Day = '0' + str(Day)
-    Date = str(Year) + ':' + str(Month) + ':' + str(Day)
+    Date = str(Year) + '-' + str(Month) + '-' + str(Day)
    
     return Date
 
@@ -88,17 +90,17 @@ def TravelPrice():
         Price += 800
     elif Klass == 'First Class':
         Price += 2000
-    if int(HourTime) > 18 and int(HourTime) < 6 and Klass != 'Economy':
-        Price -= 300
-        if Klass == 'First Class':
-            Price -= 300
+    if intHourTime > 18 and intHourTime <= 23 or intHourTime < 6 and intHourTime >= 0:
+        Price -= 150
+        if Klass == 'Bussiness' or Klass == 'First Class':
+            Price -= 150
+            if Klass == 'First Class':
+                Price -= 300
     
     return Price
     
-
-
 AllBookingsList = []
-for i in range(500):
+for i in range(50):
     Timee = RandomizeTrainScheduleTime()
     Datee = RandomizeTrainScheduleDate()
     FromCityy = TravelFromCity()
@@ -107,7 +109,28 @@ for i in range(500):
     Pricee = TravelPrice()
     booking = Booking(Timee,Datee,FromCityy,ToCityy,Klasss,Pricee)
     AllBookingsList.append(booking)
-print(AllBookingsList)
+
+'''
+for i in AllBookingsList:
+    if i.fromcity == 'Stockholm' and i.tocity == 'Gävle' and i.klass == 'First Class':
+        print(i)
+'''
+
+def BookTravel():
+    cal = Calendar(root, selectmode = 'day',year = 2022, month = 6,day = 31)
+    cal.place(anchor = tk.CENTER, x = 150, y = 163)
+    
+    def GetCalanderDate():
+        global DateSetted
+        DateSetted = cal.get_date() 
+        print(DateSetted)
+        for i in AllBookingsList:
+            if i.date == DateSetted:
+                print(i)
+    SetDate = tk.Button(root, text = "Set Date", command = GetCalanderDate)
+    SetDate.place(anchor = tk.CENTER, x = 150, y = 300)
+
+
 
 
 def Reader():
@@ -203,16 +226,16 @@ def Profile():
     passwordboxtext.place(anchor = tk.CENTER, x = 650, y = 350)
 
     def GetNewChanges():
-            name = namebox.get()
-            othername = othernamebox.get()
-            age = agebox.get()
-            username = usernamebox.get()
-            password = passwordbox.get()
-            query = ("UPDATE info SET FirstName = %s, SureName = %s, Age = %s WHERE id = %s")
-            mycursor.execute(query,(name,othername,age,idresult,))
-            query = ("UPDATE signininfo SET Username = %s, Password = %s WHERE id = %s")
-            mycursor.execute(query,(username,password,idresult,))
-            mydb.commit()
+        name = namebox.get()
+        othername = othernamebox.get()
+        age = agebox.get()
+        username = usernamebox.get()
+        password = passwordbox.get()
+        query = ("UPDATE info SET FirstName = %s, SureName = %s, Age = %s WHERE id = %s")
+        mycursor.execute(query,(name,othername,age,idresult,))
+        query = ("UPDATE signininfo SET Username = %s, Password = %s WHERE id = %s")
+        mycursor.execute(query,(username,password,idresult,))
+        mydb.commit()
 
 
     ChangePersonalInfoBtn = tk.Button(root, text = 'Save new changes',command = GetNewChanges )
@@ -423,6 +446,8 @@ def MainCanvas():
     CompanyFrame.place(x = 400, y = 70)
     DateFrame = tk.Frame(root, bg = 'purple', bd = 0, width = 1000, height = 2000)
     DateFrame.place(x = 1100 , y = 70)
+    BookingBtn = tk.Button(root, text = 'Book Train', command = BookTravel)
+    BookingBtn.place(anchor = tk.CENTER, x = 75, y = 150)
 
     Killer = tk.Button(root,text = 'Quit?', command = root.destroy)
     Killer.place(anchor = tk.CENTER,x=775,y=750)
