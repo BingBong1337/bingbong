@@ -20,7 +20,7 @@ mydb = mysql.connector.connect(
 mycursor = mydb.cursor()
 print('Uppkopplad till databasen')
 
-class Booking:
+class Booking():
     def __init__(self, time, date, fromcity, tocity, klass, price):
         self.time = time
         self.date = date
@@ -29,8 +29,8 @@ class Booking:
         self.klass = klass
         self.price = price
     def __repr__(self):
-        return '({} {} {} {} {} {})'. format('Time ->',self.time,'Date ->', self.date, 'From City ->', self.fromcity, 'To City ->', self.tocity,'Klass ->', self.klass,'Price ->', self.price)
-
+        #return '({} {} {} {} {} {})'. format('Time ->',self.time,'Date ->', self.date, 'From City ->', self.fromcity, 'To City ->', self.tocity,'Klass ->', self.klass,'Price ->', self.price)
+        return '({} {} {} {} {} {})'. format(self.time, self.date, self.fromcity,  self.tocity, self.klass, self.price)
 
 def RandomizeTrainScheduleTime():
     global HourTime
@@ -41,7 +41,7 @@ def RandomizeTrainScheduleTime():
     if MinuteTime < 10:
         MinuteTime = '0' + str(MinuteTime)
     Time = str(HourTime) + ':'+ str(MinuteTime)
-    print(Time)
+    
     return Time
 
 def RandomizeTrainScheduleDate():
@@ -53,20 +53,31 @@ def RandomizeTrainScheduleDate():
     if Day < 10:
         Day = '0' + str(Day)
     Date = str(Year) + ':' + str(Month) + ':' + str(Day)
-    print(Date)
+   
     return Date
 
-def TravelCity():
+
+
+def TravelFromCity():
+    global FromCity
+    TravelCityList = ['Stockholm','Göteborg','Linköping','Malmö','Uppsala','Örebro','Helsingborg','Jönköping','Norrköping','Lund','Umeå','Gävle','Södertälje','Karlstad','Östersund','Mora','Bordlänge','Solna','Halmstad','Nybro','Bålsta','Västerås']
+    FromCity = r.choice(TravelCityList)
+    return FromCity
+
+def TravelToCity():
     TravelCityList = ['Stockholm','Göteborg','Linköping','Malmö','Uppsala','Örebro','Helsingborg','Jönköping','Norrköping','Lund','Umeå','Gävle','Södertälje','Karlstad','Östersund','Mora','Bordlänge','Solna','Halmstad','Nybro','Bålsta','Västerås']
     ToCity = r.choice(TravelCityList)
-    print(ToCity)
+    while FromCity == ToCity:
+        ToCity = r.choice(TravelCityList)
     return ToCity
+
+
 
 def TravelKlass():
     global Klass
     KlassList = ['Economy','Bussiness','First Class']
     Klass = r.choice(KlassList)
-    print(Klass)
+    
     return Klass
 
 def TravelPrice():
@@ -82,17 +93,22 @@ def TravelPrice():
         if Klass == 'First Class':
             Price -= 300
     
-    print(Price)
     return Price
     
-Timee = RandomizeTrainScheduleTime()
-Datee = RandomizeTrainScheduleDate()
-ToCityy = TravelCity()
-Klasss = TravelKlass()
-Pricee = TravelPrice()
 
-gg = Booking(Timee,Datee,'Stockholm',ToCityy,Klass,Pricee)
-print(gg)
+
+AllBookingsList = []
+for i in range(500):
+    Timee = RandomizeTrainScheduleTime()
+    Datee = RandomizeTrainScheduleDate()
+    FromCityy = TravelFromCity()
+    ToCityy = TravelToCity()
+    Klasss = TravelKlass()
+    Pricee = TravelPrice()
+    booking = Booking(Timee,Datee,FromCityy,ToCityy,Klasss,Pricee)
+    AllBookingsList.append(booking)
+print(AllBookingsList)
+
 
 def Reader():
     mycursor.execute('SELECT * FROM Info') #Ändra '*' till namnet på kollumn som vill readas
