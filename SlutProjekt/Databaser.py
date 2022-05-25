@@ -21,33 +21,78 @@ mycursor = mydb.cursor()
 print('Uppkopplad till databasen')
 
 class Booking:
-    def __init__(self, time , date, fromcity, tocity, klass, price):
+    def __init__(self, time, date, fromcity, tocity, klass, price):
         self.time = time
         self.date = date
         self.fromcity = fromcity
         self.tocity = tocity
         self.klass = klass
         self.price = price
-        
+    def __repr__(self):
+        return '({} {} {} {} {} {})'. format('Time ->',self.time,'Date ->', self.date, 'From City ->', self.fromcity, 'To City ->', self.tocity,'Klass ->', self.klass,'Price ->', self.price)
 
-HourTime = r.randint(0,23)
-MinuteTime = r.randint(0,59)
-Month = r.randint(1,12)
-Day = r.randint(0,28)
-Year = r.randint(2022,2030)
-if HourTime < 10:
-    HourTime = '0' + str(HourTime)
-if MinuteTime < 10:
-    MinuteTime = '0' + str(MinuteTime)
-if Month < 10:
-    Month = '0' + str(Month)
-if Day < 10:
-    Day = '0' + str(Day)
-Time = str(HourTime) + ':'+ str(MinuteTime)
-print(Time)
-Date = str(Year) + ':' + str(Month) + ':' + str(Day)
-print(Date)
 
+def RandomizeTrainScheduleTime():
+    global HourTime
+    HourTime = r.randint(0,23)
+    MinuteTime = r.randint(0,59)
+    if HourTime < 10:
+        HourTime = '0' + str(HourTime)
+    if MinuteTime < 10:
+        MinuteTime = '0' + str(MinuteTime)
+    Time = str(HourTime) + ':'+ str(MinuteTime)
+    print(Time)
+    return Time
+
+def RandomizeTrainScheduleDate():
+    Month = r.randint(1,12)
+    Day = r.randint(0,28)
+    Year = r.randint(2022,2030)
+    if Month < 10:
+        Month = '0' + str(Month)
+    if Day < 10:
+        Day = '0' + str(Day)
+    Date = str(Year) + ':' + str(Month) + ':' + str(Day)
+    print(Date)
+    return Date
+
+def TravelCity():
+    TravelCityList = ['Stockholm','Göteborg','Linköping','Malmö','Uppsala','Örebro','Helsingborg','Jönköping','Norrköping','Lund','Umeå','Gävle','Södertälje','Karlstad','Östersund','Mora','Bordlänge','Solna','Halmstad','Nybro','Bålsta','Västerås']
+    ToCity = r.choice(TravelCityList)
+    print(ToCity)
+    return ToCity
+
+def TravelKlass():
+    global Klass
+    KlassList = ['Economy','Bussiness','First Class']
+    Klass = r.choice(KlassList)
+    print(Klass)
+    return Klass
+
+def TravelPrice():
+    Price = 0
+    if Klass == 'Economy':
+        Price += 300
+    elif Klass == 'Bussiness':
+        Price += 800
+    elif Klass == 'First Class':
+        Price += 2000
+    if int(HourTime) > 18 and int(HourTime) < 6 and Klass != 'Economy':
+        Price -= 300
+        if Klass == 'First Class':
+            Price -= 300
+    
+    print(Price)
+    return Price
+    
+Timee = RandomizeTrainScheduleTime()
+Datee = RandomizeTrainScheduleDate()
+ToCityy = TravelCity()
+Klasss = TravelKlass()
+Pricee = TravelPrice()
+
+gg = Booking(Timee,Datee,'Stockholm',ToCityy,Klass,Pricee)
+print(gg)
 
 def Reader():
     mycursor.execute('SELECT * FROM Info') #Ändra '*' till namnet på kollumn som vill readas
@@ -328,8 +373,6 @@ def ChattingFrame():
     tree.place(anchor = tk.CENTER, x = 775 , y = 400)
     th.start_new_thread(receiver_thread, ())
     
-    
-
 def quitchat():
     c = 'xqzwy'
     d = c.encode("utf-16") 
@@ -353,24 +396,6 @@ def chat():
     global s
     s = connect_to_server()
     th.start_new_thread(receiver_thread, ())
-    #root.mainloop()
-
-def RandomizeTrainSchedule():
-    HourTime = r.randint(0,23)
-    MinuteTime = r.randint(0,59)
-    Month = r.randint(1,12)
-    Day = r.randint(0,28)
-    Year = r.randint(2022,2030)
-    if HourTime < 10:
-        HourTime = '0' + str(HourTime)
-    if MinuteTime < 10:
-        MinuteTime = '0' + str(MinuteTime)
-    Time = str(HourTime) + ':'+ str(MinuteTime)
-    print(Time)
-    Date = str(Year) + ':' + str(Month) + ':' + str(Day)
-    print(Date)
-
-
 
 def MainCanvas():
     Canvas.delete('all')
