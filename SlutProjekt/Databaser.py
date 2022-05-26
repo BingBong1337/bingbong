@@ -1,3 +1,4 @@
+from typing import Set
 import mysql.connector
 import tkinter as tk
 from tkinter import ttk
@@ -7,7 +8,7 @@ import _thread as th
 from tkcalendar import Calendar
 
 root = tk.Tk()
-root.geometry('1920x1080')
+root.geometry('1536x864')
 Canvas = tk.Canvas(root,bg = 'white', height = 2000, width = 3000,bd = 0)
 Canvas.pack()
 ProfilePic = tk.PhotoImage(file = 'proff.png')
@@ -20,6 +21,7 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 print('Uppkopplad till databasen')
+AdminPrivledges = 0
 
 class Booking():
     def __init__(self, time, date, fromcity, tocity, klass, price):
@@ -43,13 +45,12 @@ def RandomizeTrainScheduleTime():
     if MinuteTime < 10:
         MinuteTime = '0' + str(MinuteTime)
     Time = str(HourTime) + '-'+ str(MinuteTime)
-    
     return Time
 
 def RandomizeTrainScheduleDate():
     Month = r.randint(1,12)
-    Day = r.randint(0,28)
-    Year = r.randint(2022,2030)
+    Day = r.randint(1,28)
+    Year = r.randint(2022,2024)
     if Month < 10:
         Month = '0' + str(Month)
     if Day < 10:
@@ -57,8 +58,6 @@ def RandomizeTrainScheduleDate():
     Date = str(Year) + '-' + str(Month) + '-' + str(Day)
    
     return Date
-
-
 
 def TravelFromCity():
     global FromCity
@@ -73,13 +72,10 @@ def TravelToCity():
         ToCity = r.choice(TravelCityList)
     return ToCity
 
-
-
 def TravelKlass():
     global Klass
     KlassList = ['Economy','Bussiness','First Class']
     Klass = r.choice(KlassList)
-    
     return Klass
 
 def TravelPrice():
@@ -96,11 +92,10 @@ def TravelPrice():
             Price -= 150
             if Klass == 'First Class':
                 Price -= 300
-    
     return Price
     
 AllBookingsList = []
-for i in range(50):
+for i in range(500): #Sätt till 500000 innan testning!
     Timee = RandomizeTrainScheduleTime()
     Datee = RandomizeTrainScheduleDate()
     FromCityy = TravelFromCity()
@@ -117,25 +112,74 @@ for i in AllBookingsList:
 '''
 
 def BookTravel():
+    BookingBtn.place_forget()
     cal = Calendar(root, selectmode = 'day',year = 2022, month = 6,day = 31)
-    cal.place(anchor = tk.CENTER, x = 150, y = 163)
-    
+    cal.place(anchor = tk.CENTER, x = 175, y = 400)
+    DepartureDateText = tk.Label(root, text = 'Choose Date Of Departure')
+    DepartureDateText.place(anchor = tk.CENTER, x = 175, y = 270)
+    '''
     def GetCalanderDate():
         global DateSetted
-        DateSetted = cal.get_date() 
+        
         print(DateSetted)
         for i in AllBookingsList:
             if i.date == DateSetted:
                 print(i)
     SetDate = tk.Button(root, text = "Set Date", command = GetCalanderDate)
     SetDate.place(anchor = tk.CENTER, x = 150, y = 300)
+    '''
+    CurrentLocation = tk.Entry(root)
+    CurrentLocation.place(anchor = tk.CENTER,x = 100, y = 200)
+    CurrentLocationText = tk.Label(root, text = 'From')
+    CurrentLocationText.place(anchor = tk.CENTER,x = 100, y = 150)
+    TravelLocation = tk.Entry(root)
+    TravelLocation.place(anchor = tk.CENTER,x = 250, y = 200)
+    TravelLocationText = tk.Label(root, text = 'To')
+    TravelLocationText.place(anchor = tk.CENTER,x = 250, y = 150)
 
-
-
+    '''
+    def GetCurrentLocation():
+        GetCurrentLocation = CurrentLocation.get()
+    def GetTravelLocation():
+        GetTravelLocation = TravelLocation.get()
+    '''
+    def GetCurrentLocationAndTravelLocationAndTimeAndDate():
+        GetCurrentLocation = CurrentLocation.get()
+        GetTravelLocation = TravelLocation.get()
+        DateSetted = cal.get_date() 
+        if GetCurrentLocation == '':
+            for i in AllBookingsList:
+                if i.tocity == GetTravelLocation:
+                    print(i)
+        elif GetTravelLocation == '':
+            for i in AllBookingsList:
+                if i.fromcity == GetCurrentLocation:
+                    print(i)
+        elif DateSetted == '':
+            for i in AllBookingsList:
+                if i.tocity == GetTravelLocation and i.fromcity == GetCurrentLocation:
+                    print(i)
+        else:
+            for i in AllBookingsList:
+                if i.fromcity == GetCurrentLocation and i.tocity == GetTravelLocation and i.date == DateSetted:
+                    print(i)
+            
+            
+    SetCurrentLocationAndTravelLocationBtn = tk.Button(root, text = 'Search Trips', command = GetCurrentLocationAndTravelLocationAndTimeAndDate)
+    SetCurrentLocationAndTravelLocationBtn.place(anchor = tk.CENTER, x = 175, y = 600)
+    Cancelbtn = tk.Button(root,text = 'Cancel', command = MainCanvas)
+    Cancelbtn.place(anchor = tk.CENTER, x = 775, y = 750)
 
 def Reader():
-    mycursor.execute('SELECT * FROM Info') #Ändra '*' till namnet på kollumn som vill readas
+    global tree, tree2, UserNameChanger, PassWordChanger
+    mycursor.execute('SELECT * FROM Info')
     myresult = mycursor.fetchall()
+    mycursor.execute("SELECT Username, Password FROM signininfo")
+    myotherresult = mycursor.fetchall()
+    try:
+        myotherresult.pop(0)
+    except:
+        pass
     tree = ttk.Treeview(root, column = ('c1','c2','c3','c4'), show = 'headings')
     tree.column('#1',anchor = tk.CENTER)
     tree.heading('#1',text = 'id')
@@ -147,25 +191,76 @@ def Reader():
     tree.heading('#4',text = 'Age')
     vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = tree.yview)
     tree.config(xscrollcommand=vrtcscrll.set)
-    tree.place(anchor = tk.CENTER, x = 800 , y = 120)
+    tree.place(anchor = tk.CENTER, x = 600 , y = 120)
     for i in myresult:
-        tree.insert('',tk.END,values = i)
+        tree.insert('', tk.END, values = i)
+
+    tree2 = ttk.Treeview(root, column = ('c1','c2'), show = 'headings')
+    tree2.column('#1',anchor = tk.CENTER)
+    tree2.heading('#1',text = 'Username')
+    tree2.column('#2',anchor = tk.CENTER)
+    tree2.heading('#2',text = 'Password')
+    vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = tree2.yview)
+    tree2.config(xscrollcommand=vrtcscrll.set)
+    tree2.place(anchor = tk.CENTER, x = 1200 , y = 120)
+    for i in myotherresult:
+        tree2.insert('', tk.END, values = i)
     finished = tk.Button(root,text = 'Go Back',command = AdminPage)
     finished.place(anchor = tk.CENTER, x = 775, y = 700)
+    RemoveSelecter = tk.Button(root, text = 'Delete Selected',command = GetRev)
+    RemoveSelecter.place(anchor = tk.CENTER, x = 775, y = 500)
+
+    UserNameChanger = tk.Entry(root)
+    UserNameChanger.place(anchor = tk.CENTER, x = 700, y = 400)
+    UserNameChangerText = tk.Label(root, text = 'Change Username')
+    UserNameChangerText.place(anchor = tk.CENTER, x = 700, y = 350)
+    PassWordChanger = tk.Entry(root)
+    PassWordChanger.place(anchor = tk.CENTER, x = 850, y = 400)
+    PassWordChangerText = tk.Label(root, text = 'Change Username')
+    PassWordChangerText.place(anchor = tk.CENTER, x = 850, y = 350)
+    UpdateSignInInfobtn = tk.Button(root, text = 'Update Info', command = AdminChangerGet)
+    UpdateSignInInfobtn.place(anchor = tk.CENTER, x = 775, y = 450)
+    tree2.bind("<ButtonRelease-1>",clicker)
     return
 
-def GetRev():
-    global RemoveGet
-    RemoveGet = int(RemoveInput.get())
-    RemoveInput.place_forget()
-    RemoveInputGet.place_forget()
-    sql = "DELETE FROM Info WHERE id = %s"
-    mycursor.execute(sql,(RemoveGet,))
-    sql = "DELETE FROM signininfo WHERE id = %s"
-    mycursor.execute(sql,(RemoveGet,))
+def AdminChangerGet():
+    query = ("UPDATE signininfo SET Username = %s, Password = %s WHERE Username = %s")
+    mycursor.execute(query,(UserNameChanger.get(),PassWordChanger.get(),value[0],))
     mydb.commit()
-    AdminPage()
 
+def AdminChanger():
+    global value
+    try:
+        UserNameChanger.delete(0,tk.END)
+        PassWordChanger.delete(0,tk.END)
+        selected = tree2.focus()
+        value = tree2.item(selected,'values')
+        UserNameChanger.insert(0,value[0])
+        PassWordChanger.insert(0,value[1])
+    except:
+        pass
+
+def clicker(e):
+    AdminChanger()
+
+def GetRev():
+
+    try:
+        selected = tree.focus()
+        values = tree.item(selected,'values')
+        RemoveGet = int(values[0])
+    except:
+        pass
+    try:
+        sql = "DELETE FROM Info WHERE id = %s"
+        mycursor.execute(sql,(RemoveGet,))
+        sql = "DELETE FROM signininfo WHERE id = %s"
+        mycursor.execute(sql,(RemoveGet,))
+        mydb.commit()
+        AdminPage()
+    except:
+        pass
+'''
 def Deleter():
     global RemoveInput,RemoveInputGet
     RemoveInput = tk.Entry(root)
@@ -179,7 +274,7 @@ def Deleter():
     Remover.place_forget()
     finished = tk.Button(root,text = 'Go Back',command = AdminPage)
     finished.place(anchor = tk.CENTER, x = 775, y = 700)
-
+'''
 def Profile():
     Canvas.delete('all')
     ProfileFrame = tk.Frame(root, bg = 'gray', bd = 0, width = 2000, height = 2000)
@@ -337,10 +432,10 @@ def SignUp():
     SetSignInInfo.place(anchor = tk.CENTER, x = 775, y = 400)
 
     if AdminPrivledges >= 1:
-        GoBackBtn = tk.Button(root, text = 'Go back to sign in screen', command = AdminPage)
+        GoBackBtn = tk.Button(root, text = 'Go back', command = AdminPage)
         GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 500)
     else:
-        GoBackBtn = tk.Button(root, text = 'Go back to sign in screen', command = LoginScreen)
+        GoBackBtn = tk.Button(root, text = 'Go back', command = LoginScreen)
         GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 500)
 
 def LoginScreen():
@@ -370,12 +465,12 @@ def AdminPage():
     AdminFrame.place(x = 0, y = 0)
     Adder = tk.Button(root,text = 'Add Person?',command = SignUp)
     Adder.place(anchor = tk.CENTER, x= 775,y=50)
-    Remover = tk.Button(root,text = 'Remove Person?',command = Deleter)
-    Remover.place(anchor = tk.CENTER, x= 775,y=100)
     Read = tk.Button(root,text = 'Print all in database?',command = Reader)
-    Read.place(anchor = tk.CENTER, x= 775,y=150)
+    Read.place(anchor = tk.CENTER, x= 775,y=100)
     LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
-    LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
+    LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 800)
+    Killer = tk.Button(root,text = 'Quit?', command = root.destroy)
+    Killer.place(anchor = tk.CENTER,x=775,y=850)
 
 def connect_to_server():
     s = so.socket()
@@ -437,6 +532,7 @@ def chat():
     th.start_new_thread(receiver_thread, ())
 
 def MainCanvas():
+    global BookingBtn
     Canvas.delete('all')
     AdFrame = tk.Frame(root, bg = 'blue', bd = 0, width = 2000, height = 70)
     AdFrame.place(x = 0, y = 0)
@@ -446,17 +542,17 @@ def MainCanvas():
     CompanyFrame.place(x = 400, y = 70)
     DateFrame = tk.Frame(root, bg = 'purple', bd = 0, width = 1000, height = 2000)
     DateFrame.place(x = 1100 , y = 70)
+
     BookingBtn = tk.Button(root, text = 'Book Train', command = BookTravel)
     BookingBtn.place(anchor = tk.CENTER, x = 75, y = 150)
-
     Killer = tk.Button(root,text = 'Quit?', command = root.destroy)
-    Killer.place(anchor = tk.CENTER,x=775,y=750)
+    Killer.place(anchor = tk.CENTER,x=775,y=850)
     LogOutBtn = tk.Button(root, text = 'Logout?', command = logout)
-    LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 700)
+    LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 800)
     ProfileBtn = tk.Button(root, image = ProfilePic, command = Profile)
     ProfileBtn.place(anchor = tk.CENTER, x = 1500, y = 33)
     ChatBtn = tk.Button(root, text = 'Open Chat', command = ChattingFrame)
-    ChatBtn.place(anchor = tk.CENTER, x = 770, y = 300)
+    ChatBtn.place(anchor = tk.CENTER, x = 1500, y = 800)
 
 
 LoginScreen()
