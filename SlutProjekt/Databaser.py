@@ -1,5 +1,3 @@
-from turtle import width
-from typing import Set
 import mysql.connector
 import tkinter as tk
 from tkinter import ttk
@@ -106,6 +104,8 @@ for i in range(500): #Sätt till 500000 innan testning!
     booking = Booking(Timee,Datee,FromCityy,ToCityy,Klasss,Pricee)
     AllBookingsList.append(booking)
 
+
+
 '''
 for i in AllBookingsList:
     if i.fromcity == 'Stockholm' and i.tocity == 'Gävle' and i.klass == 'First-Class':
@@ -146,11 +146,33 @@ def BookTravel():
     def GetTravelLocation():
         GetTravelLocation = TravelLocation.get()
     '''
+    def BookTravel():
+        global DesiredTravel
+        selected = AvailableBookings.focus()
+        DesiredTravel = AvailableBookings.item(selected,'values')
+
+    def BookClicker(e):
+        BookTravel()
+
+    def ActuallyBook():
+        query = ("SELECT id FROM signininfo WHERE Username = %s and Password = %s")
+        mycursor.execute(query,(SignInUserName, SignInPassWord,))
+        info = mycursor.fetchone()
+        idresult = info[0]
+        TravelInfo = ("INSERT INTO travel (id, Time, Date, FromCity, ToCity, Klass, Price) VALUES (%s,%s,%s,%s,%s,%s,%s)")
+        mycursor.execute(TravelInfo,(idresult,DesiredTravel[0],DesiredTravel[1],DesiredTravel[2],DesiredTravel[3],DesiredTravel[4],DesiredTravel[5],))
+        mydb.commit()
+        YouBookedText = tk.Label(root, text = 'You Booked '+str(DesiredTravel[2]) + '->'+str(DesiredTravel[3]) + ' At '+str(DesiredTravel[0])+ ' ' +str(DesiredTravel[1])+ ' In Class ' +str(DesiredTravel[4])+ ' Which Costs '+str(DesiredTravel[5]))
+        YouBookedText.place(anchor = tk.CENTER, x = 775, y = 100)
+        root.after(2000,MainCanvas)
+
+        
     def GetCurrentLocationAndTravelLocationAndTimeAndDate():
+        global AvailableBookings
         GetCurrentLocation = CurrentLocation.get()
         GetTravelLocation = TravelLocation.get()
         DateSetted = cal.get_date() 
-        AvailableBookings = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings', height = 30)
+        AvailableBookings = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings', height = 27)
         AvailableBookings.column('#1',anchor = tk.CENTER, width = 110)
         AvailableBookings.heading('#1',text = 'Time(h-min)')
         AvailableBookings.column('#2',anchor = tk.CENTER, width = 120)
@@ -166,7 +188,7 @@ def BookTravel():
         vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = AvailableBookings.yview)
         AvailableBookings.config(xscrollcommand=vrtcscrll.set)
         AvailableBookings.place(anchor = tk.CENTER, x = 750 , y = 400)
-
+        AvailableBookings.bind("<ButtonRelease-1>",BookClicker)
 
         if GetCurrentLocation == '':
             for i in AllBookingsList:
@@ -185,13 +207,14 @@ def BookTravel():
                 if i.fromcity == GetCurrentLocation and i.tocity == GetTravelLocation and i.date == DateSetted:
                     AvailableBookings.insert('', tk.END, values = i)
                            
+
+
     SetCurrentLocationAndTravelLocationBtn = tk.Button(root, text = 'Search Trips', command = GetCurrentLocationAndTravelLocationAndTimeAndDate)
     SetCurrentLocationAndTravelLocationBtn.place(anchor = tk.CENTER, x = 175, y = 600)
+    BookTripBtn = tk.Button(root, text = 'Book Selected Trip',command = ActuallyBook)
+    BookTripBtn.place(anchor = tk.CENTER, x = 775, y = 700)
     Cancelbtn = tk.Button(root,text = 'Cancel', command = MainCanvas)
     Cancelbtn.place(anchor = tk.CENTER, x = 775, y = 750)
-
-
-
 
 def Reader():
     global tree, tree2, UserNameChanger, PassWordChanger
@@ -308,8 +331,8 @@ def Profile():
     GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 700)
     query = ("SELECT id FROM signininfo WHERE Username = %s and Password = %s")
     mycursor.execute(query,(SignInUserName, SignInPassWord,))
-    idresult = mycursor.fetchone()
-    idresult = idresult[0]
+    info = mycursor.fetchone()
+    idresult = info[0]
     query1 = ("SELECT * FROM info WHERE id = %s")
     query2 = ("SELECT * FROM signininfo WHERE id = %s")
     mycursor.execute(query1,(idresult,))
@@ -343,6 +366,46 @@ def Profile():
     passwordboxtext = tk.Label(root, text = 'Your Password')
     passwordboxtext.place(anchor = tk.CENTER, x = 650, y = 350)
 
+    def ChooseToDeleteBooking():
+        global TripToBeRemoved
+        selected = YourBookings.focus()
+        TripToBeRemoved = YourBookings.item(selected,'values')
+
+    def RemoveBookingClicker(e):
+        ChooseToDeleteBooking()
+
+    def DeleteBooking():
+        query = ("DELETE FROM travel WHERE id = %s AND Time = %s AND Date = %s AND FromCity = %s AND ToCity = %s")
+        mycursor.execute(query,(idresult,TripToBeRemoved[0],TripToBeRemoved[1],TripToBeRemoved[2],TripToBeRemoved[3],))
+        mydb.commit()
+        Profile()
+
+
+    YourBookingsText = tk.Label(root, text = 'Your Bookings')
+    YourBookingsText.place(anchor = tk.CENTER, x = 1200, y = 50)
+    query = "SELECT Time,Date,FromCity,ToCity,Klass,Price FROM travel WHERE id = %s"
+    mycursor.execute(query,(idresult,))
+    MyBookings = mycursor.fetchall()
+    YourBookings = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings')
+    YourBookings.column('#1',anchor = tk.CENTER, width = 110)
+    YourBookings.heading('#1',text = 'Time(h-min)')
+    YourBookings.column('#2',anchor = tk.CENTER, width = 120)
+    YourBookings.heading('#2',text = 'Date(YYYY-MM-DD)')
+    YourBookings.column('#3',anchor = tk.CENTER, width = 120)
+    YourBookings.heading('#3',text = 'From')
+    YourBookings.column('#4',anchor = tk.CENTER, width = 120)
+    YourBookings.heading('#4',text = 'Destination')
+    YourBookings.column('#5',anchor = tk.CENTER, width = 70)
+    YourBookings.heading('#5',text = 'Class')
+    YourBookings.column('#6',anchor = tk.CENTER, width = 65)
+    YourBookings.heading('#6',text = 'Price(kr)')
+    vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = YourBookings.yview)
+    YourBookings.config(xscrollcommand=vrtcscrll.set)
+    YourBookings.place(anchor = tk.CENTER, x = 1200 , y = 200)
+    for i in MyBookings:
+        YourBookings.insert('', tk.END, values = i)
+    YourBookings.bind("<ButtonRelease-1>",RemoveBookingClicker)
+
     def GetNewChanges():
         name = namebox.get()
         othername = othernamebox.get()
@@ -356,9 +419,10 @@ def Profile():
         mydb.commit()
 
 
-    ChangePersonalInfoBtn = tk.Button(root, text = 'Save new changes',command = GetNewChanges )
+    ChangePersonalInfoBtn = tk.Button(root, text = 'Save new changes', command = GetNewChanges )
     ChangePersonalInfoBtn.place(anchor = tk.CENTER, x = 775, y = 600)
-    
+    DeleteBookingbtn = tk.Button(root, text = 'Remove Selected Booking', command = DeleteBooking)
+    DeleteBookingbtn.place(anchor = tk.CENTER, x = 1200, y = 700)    
     
 
 def LoginFrame():
@@ -393,8 +457,8 @@ def GetSignInInfo():
             LoginFrame()
             success = tk.Label(root,text='Sign in successful!', bg = 'green')
             success.place(anchor = tk.CENTER, x = 775, y = 50)
+    
         
-            
             root.after(2000, MainCanvas)
     except:
         WrongSignInData = tk.Label(root, text = 'Incorrect Username or Password')
@@ -483,7 +547,66 @@ def LoginScreen():
     Killer.place(anchor = tk.CENTER, x = 775, y = 700)
 
 def AdminPage():
-    global Adder, Read, Remover
+    global Adder, Read
+
+    def ChooseToDeleteBooking():
+        global TripToBeRemoved
+        try:
+            selected = AllBookingstree.focus()
+            TripToBeRemoved = AllBookingstree.item(selected,'values')
+            print(TripToBeRemoved)
+        except:
+            pass
+
+    def RemoveBookingClicker(e):
+        ChooseToDeleteBooking()
+
+    def DeleteBooking():
+        try:
+            query = ("DELETE FROM travel WHERE id = %s AND Time = %s AND Date = %s AND FromCity = %s AND ToCity = %s")
+            mycursor.execute(query,(TripToBeRemoved[0],TripToBeRemoved[1],TripToBeRemoved[2],TripToBeRemoved[3],TripToBeRemoved[4],))
+            mydb.commit()
+            AllBookingsViewer()
+        except:
+            pass
+
+    def AllBookingsViewer():
+        global AllBookingstree
+        Adder.place_forget()
+        Read.place_forget()
+        ViewAllBookings.place_forget()
+        AllBookingsText = tk.Label(root, text = 'All Current Bookings')
+        AllBookingsText.place(anchor = tk.CENTER, x = 775, y = 50)
+        query = "SELECT * FROM travel"
+        mycursor.execute(query)
+        AllBookings = mycursor.fetchall()
+        AllBookingstree = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6','c7'), show = 'headings')
+        AllBookingstree.column('#1',anchor = tk.CENTER, width = 30)
+        AllBookingstree.heading('#1',text = 'id')
+        AllBookingstree.column('#2',anchor = tk.CENTER, width = 110)
+        AllBookingstree.heading('#2',text = 'Time(h-min)')
+        AllBookingstree.column('#3',anchor = tk.CENTER, width = 120)
+        AllBookingstree.heading('#3',text = 'Date(YYYY-MM-DD)')
+        AllBookingstree.column('#4',anchor = tk.CENTER, width = 120)
+        AllBookingstree.heading('#4',text = 'From')
+        AllBookingstree.column('#5',anchor = tk.CENTER, width = 120)
+        AllBookingstree.heading('#5',text = 'Destination')
+        AllBookingstree.column('#6',anchor = tk.CENTER, width = 70)
+        AllBookingstree.heading('#6',text = 'Class')
+        AllBookingstree.column('#7',anchor = tk.CENTER, width = 65)
+        AllBookingstree.heading('#7',text = 'Price(kr)')
+        vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = AllBookingstree.yview)
+        AllBookingstree.config(xscrollcommand=vrtcscrll.set)
+        AllBookingstree.place(anchor = tk.CENTER, x = 775 , y = 200)
+        for i in AllBookings:
+            AllBookingstree.insert('', tk.END, values = i)
+        AllBookingstree.bind("<ButtonRelease-1>",RemoveBookingClicker)
+
+        DeleteChosenBooking = tk.Button(root, text = 'Delete Chosen Booking', command = DeleteBooking)
+        DeleteChosenBooking.place(anchor = tk.CENTER, x = 775, y = 400)
+        GoBackbtn = tk.Button(root, text = 'Return', command = AdminPage)
+        GoBackbtn.place(anchor = tk.CENTER, x = 775, y = 750)
+        
     AdminFrame = tk.Frame(root,bg = 'purple', bd = 0,width = 2000, height = 2000)
     AdminFrame.place(x = 0, y = 0)
     Adder = tk.Button(root,text = 'Add Person?',command = SignUp)
@@ -494,6 +617,11 @@ def AdminPage():
     LogOutBtn.place(anchor = tk.CENTER, x = 775, y = 800)
     Killer = tk.Button(root,text = 'Quit?', command = root.destroy)
     Killer.place(anchor = tk.CENTER,x=775,y=850)
+    ViewAllBookings = tk.Button(root, text = 'View All Current Bookings', command = AllBookingsViewer)
+    ViewAllBookings.place(anchor = tk.CENTER, x = 775, y = 300)
+    ViewChat = tk.Button(root, text = 'Open Chat', command = ChattingFrame)
+    ViewChat.place(anchor = tk.CENTER, x = 1500, y = 800)
+    
 
 def connect_to_server():
     s = so.socket()
@@ -534,7 +662,10 @@ def quitchat():
     c = 'xqzwy'
     d = c.encode("utf-16") 
     s.send(d)
-    MainCanvas()
+    if AdminPrivledges >= 1:
+        AdminPage()
+    else:
+        MainCanvas()
 
 
 def receiver_thread():
