@@ -1,3 +1,4 @@
+from turtle import width
 from typing import Set
 import mysql.connector
 import tkinter as tk
@@ -50,7 +51,7 @@ def RandomizeTrainScheduleTime():
 def RandomizeTrainScheduleDate():
     Month = r.randint(1,12)
     Day = r.randint(1,28)
-    Year = r.randint(2022,2024)
+    Year = r.randint(2022,2023)
     if Month < 10:
         Month = '0' + str(Month)
     if Day < 10:
@@ -74,7 +75,7 @@ def TravelToCity():
 
 def TravelKlass():
     global Klass
-    KlassList = ['Economy','Bussiness','First Class']
+    KlassList = ['Economy','Bussiness','First-Class']
     Klass = r.choice(KlassList)
     return Klass
 
@@ -84,13 +85,13 @@ def TravelPrice():
         Price += 300
     elif Klass == 'Bussiness':
         Price += 800
-    elif Klass == 'First Class':
+    elif Klass == 'First-Class':
         Price += 2000
     if intHourTime > 18 and intHourTime <= 23 or intHourTime < 6 and intHourTime >= 0:
         Price -= 150
-        if Klass == 'Bussiness' or Klass == 'First Class':
+        if Klass == 'Bussiness' or Klass == 'First-Class':
             Price -= 150
-            if Klass == 'First Class':
+            if Klass == 'First-Class':
                 Price -= 300
     return Price
     
@@ -107,13 +108,15 @@ for i in range(500): #Sätt till 500000 innan testning!
 
 '''
 for i in AllBookingsList:
-    if i.fromcity == 'Stockholm' and i.tocity == 'Gävle' and i.klass == 'First Class':
+    if i.fromcity == 'Stockholm' and i.tocity == 'Gävle' and i.klass == 'First-Class':
         print(i)
 '''
 
 def BookTravel():
     BookingBtn.place_forget()
-    cal = Calendar(root, selectmode = 'day',year = 2022, month = 6,day = 31)
+    SupportedLocationsText = tk.Label(root, text = 'These cities have available stations \n Stockholm, Göteborg, Linköping, Malmö, Uppsala, Örebro, Helsingborg, Jönköping, Norrköping, Lund, Umeå, Gävle, Södertälje, Karlstad, Östersund, Mora, Bordlänge, Solna, Halmstad, Nybro, Bålsta, Västerås')
+    SupportedLocationsText.place(anchor = tk.CENTER, x = 775, y = 20)
+    cal = Calendar(root, selectmode = 'day',year = 2022, month = 6, day = 31)
     cal.place(anchor = tk.CENTER, x = 175, y = 400)
     DepartureDateText = tk.Label(root, text = 'Choose Date Of Departure')
     DepartureDateText.place(anchor = tk.CENTER, x = 175, y = 270)
@@ -147,28 +150,48 @@ def BookTravel():
         GetCurrentLocation = CurrentLocation.get()
         GetTravelLocation = TravelLocation.get()
         DateSetted = cal.get_date() 
+        AvailableBookings = ttk.Treeview(root, column = ('c1','c2','c3','c4','c5','c6'), show = 'headings', height = 30)
+        AvailableBookings.column('#1',anchor = tk.CENTER, width = 110)
+        AvailableBookings.heading('#1',text = 'Time(h-min)')
+        AvailableBookings.column('#2',anchor = tk.CENTER, width = 120)
+        AvailableBookings.heading('#2',text = 'Date(YYYY-MM-DD)')
+        AvailableBookings.column('#3',anchor = tk.CENTER, width = 120)
+        AvailableBookings.heading('#3',text = 'From')
+        AvailableBookings.column('#4',anchor = tk.CENTER, width = 120)
+        AvailableBookings.heading('#4',text = 'Destination')
+        AvailableBookings.column('#5',anchor = tk.CENTER, width = 70)
+        AvailableBookings.heading('#5',text = 'Class')
+        AvailableBookings.column('#6',anchor = tk.CENTER, width = 65)
+        AvailableBookings.heading('#6',text = 'Price(kr)')
+        vrtcscrll = ttk.Scrollbar(root,orient = 'vertical',command = AvailableBookings.yview)
+        AvailableBookings.config(xscrollcommand=vrtcscrll.set)
+        AvailableBookings.place(anchor = tk.CENTER, x = 750 , y = 400)
+
+
         if GetCurrentLocation == '':
             for i in AllBookingsList:
                 if i.tocity == GetTravelLocation:
-                    print(i)
+                    AvailableBookings.insert('', tk.END, values = i)
         elif GetTravelLocation == '':
             for i in AllBookingsList:
                 if i.fromcity == GetCurrentLocation:
-                    print(i)
+                    AvailableBookings.insert('', tk.END, values = i)
         elif DateSetted == '':
             for i in AllBookingsList:
                 if i.tocity == GetTravelLocation and i.fromcity == GetCurrentLocation:
-                    print(i)
+                    AvailableBookings.insert('', tk.END, values = i)
         else:
             for i in AllBookingsList:
                 if i.fromcity == GetCurrentLocation and i.tocity == GetTravelLocation and i.date == DateSetted:
-                    print(i)
-            
-            
+                    AvailableBookings.insert('', tk.END, values = i)
+                           
     SetCurrentLocationAndTravelLocationBtn = tk.Button(root, text = 'Search Trips', command = GetCurrentLocationAndTravelLocationAndTimeAndDate)
     SetCurrentLocationAndTravelLocationBtn.place(anchor = tk.CENTER, x = 175, y = 600)
     Cancelbtn = tk.Button(root,text = 'Cancel', command = MainCanvas)
     Cancelbtn.place(anchor = tk.CENTER, x = 775, y = 750)
+
+
+
 
 def Reader():
     global tree, tree2, UserNameChanger, PassWordChanger
@@ -279,7 +302,7 @@ def Profile():
     Canvas.delete('all')
     ProfileFrame = tk.Frame(root, bg = 'gray', bd = 0, width = 2000, height = 2000)
     ProfileFrame.place(x = 0, y = 0)
-    YourProfile = tk.Label(root, text = 'Your profile')
+    YourProfile = tk.Label(root, text = 'Your profile \n Here you can change your personal information')
     YourProfile.place(anchor = tk.CENTER, x = 775, y = 50)
     GoBackBtn = tk.Button(root, text = 'Go back', command = MainCanvas)
     GoBackBtn.place(anchor = tk.CENTER, x = 775, y = 700)
@@ -516,8 +539,11 @@ def quitchat():
 
 def receiver_thread():
     while True:
-        b = s.recv(1024)
-        msg = b.decode("utf-16")
+        try:
+            b = s.recv(1024)
+            msg = b.decode("utf-16")
+        except:
+            continue
         if msg == '':
             pass
         else:

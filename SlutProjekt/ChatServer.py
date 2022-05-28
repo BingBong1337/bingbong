@@ -11,7 +11,6 @@ def start_server():         # Samma som i förra exemplet
 
 
 def threaded_client(conn):
-    k = True
     try:
         a = conn.recv(1024)
         msg = a.decode("utf-16")
@@ -20,17 +19,15 @@ def threaded_client(conn):
             connections.remove(conn)
             ThreadCount = ThreadCount-1
             conn.close()
-            k = False
+            
             
         else:
             for i in connections:
                 i.send(msg.encode('utf-16'))
+                threaded_client(conn)
     except:
         pass
-    if k == True:
-        threaded_client(conn)
-
-
+ 
 
 connections = []
 ThreadCount = 0
