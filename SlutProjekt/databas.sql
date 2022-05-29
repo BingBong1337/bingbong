@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Värd: 127.0.0.1
--- Tid vid skapande: 26 maj 2022 kl 17:02
+-- Tid vid skapande: 29 maj 2022 kl 12:33
 -- Serverversion: 10.4.24-MariaDB
 -- PHP-version: 8.1.6
 
@@ -41,7 +41,7 @@ CREATE TABLE `info` (
 INSERT INTO `info` (`id`, `FirstName`, `SureName`, `Age`) VALUES
 (18, 'Rufus', 'Hegardt', 19),
 (19, 'Albin ', 'Alvelius', 19),
-(23, 'Vicot', 'Forseman', 19);
+(24, 'Vicot', 'Forseman', 19);
 
 -- --------------------------------------------------------
 
@@ -63,7 +63,7 @@ INSERT INTO `signininfo` (`id`, `Username`, `Password`) VALUES
 (0, 'Admin', 'Admin'),
 (18, 'BruhMan', 'Password'),
 (19, 'Albinzzz', '1234'),
-(23, 'VicotMan64', 'Password');
+(24, 'VicotMan64', 'Password');
 
 -- --------------------------------------------------------
 
@@ -73,12 +73,12 @@ INSERT INTO `signininfo` (`id`, `Username`, `Password`) VALUES
 
 CREATE TABLE `travel` (
   `id` int(100) NOT NULL,
-  `Date` varchar(20) NOT NULL,
   `Time` varchar(20) NOT NULL,
+  `Date` varchar(20) NOT NULL,
   `FromCity` varchar(50) NOT NULL,
   `ToCity` varchar(50) NOT NULL,
   `Klass` varchar(20) NOT NULL,
-  `Price` int(10) NOT NULL
+  `Price` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -99,7 +99,7 @@ ALTER TABLE `info`
 -- AUTO_INCREMENT för tabell `info`
 --
 ALTER TABLE `info`
-  MODIFY `id` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
